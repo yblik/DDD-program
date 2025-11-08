@@ -34,8 +34,18 @@ namespace DDD_program.Menus
             //are you feeling poppy today?
         }
 
+        public void DrawCalendar()
+        {
+            //draw ascii art calendar
+            Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("Upcoming meetings:");
+            Console.WriteLine("10.11.26 - [confirmed]");
+            Console.WriteLine("26.11.26 - [need confirmation]");
+            Console.WriteLine("---------------------------------------------------");
+        }
         public override void CreateMenu()
         {
+            DrawCalendar();
             _menuItems.Clear();
             //TODO add menu items based on role
 
@@ -47,14 +57,8 @@ namespace DDD_program.Menus
             _menuItems.Add(new ProfileMenuItem(Role));
             //meeting history
             _menuItems.Add(new MeetingHistoryMenuItem(Role));
-            Console.WriteLine("---------------------------------------------------");
-            Console.WriteLine("Upcoming meetings:");
-            Console.WriteLine("10.11.26 - [confirmed]");
-            Console.WriteLine("26.11.26 - [need confirmation]");
-            //--upcoming meetings section
-            //--view meeting details
             _menuItems.Add(new ViewMeetingsMenuItem(Role));
-            Console.WriteLine("---------------------------------------------------");
+
 
             //report faculty 
             _menuItems.Add(new ReportMenuItem(Role));
