@@ -1,8 +1,11 @@
-﻿using System;
+﻿using DDD_program.MenuLogic;
+using DDD_program.Menus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DDD_program.Menus;
 
 namespace DDD_program
 {
@@ -66,9 +69,10 @@ namespace DDD_program
             }
 
             //for now this and no error checking
-
+            MainMenu MM = new MainMenu(RoleID);
+            MM.Select ();
             //start menus
-            
+
 
 
         }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DDD_program
+namespace DDD_program.MenuLogic
 {
     internal static class ConsoleHelper
     {

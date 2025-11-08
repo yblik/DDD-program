@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DDD_program
+namespace DDD_program.MenuLogic
 {
     internal class ExitMenuItem: MenuItem
     {

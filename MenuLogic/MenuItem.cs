@@ -4,10 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DDD_program
+namespace DDD_program.MenuLogic
 {
     internal abstract class MenuItem
     {
+        //public int Role { get; }
+
+        //protected MenuItem(int role)  //tried and failed to prevent code repeating so gave up and will repeat like a good boy
+        //{
+        //    Role = role;
+        //}
         //does the menu item action
         public abstract void Select();
 
