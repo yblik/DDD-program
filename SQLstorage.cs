@@ -13,8 +13,8 @@ namespace DDD_program
         //S.Sup.ST.table 2 (detail) = username, name, age, year
         //S.table 3 (health&support) = username, feelings, ailments[], hiddenAilments[]
         //student profile = table2+table3
-        //S.Sup.table 4 (report) = username, role, report type, detail
-        //S.Sup.table 5 (log) = username, role, login time, logout time, actionsNoted[]
+        //S.Sup.table 4 (report) = username, role, report type, detail - later
+        //S.Sup.table 5 (log) = username, role, login time, logout time, actionsNoted[] - later
 
         /// <summary>
         /// Handles all SQLite database setup and connection logic for the calendar system.
@@ -68,25 +68,31 @@ namespace DDD_program
         {
                 // Table 1: User login and core data
                 string usersTable = @"
-                CREATE TABLE IF NOT EXISTS Users (
-                    Username TEXT PRIMARY KEY,
-                    Password TEXT NOT NULL,
-                    Role TEXT NOT NULL,
-                    Meetings TEXT,
-                    Availability TEXT
+                    CREATE TABLE IF NOT EXISTS Users (
+                        Username TEXT PRIMARY KEY,
+                        Password TEXT NOT NULL,
+                        Role TEXT NOT NULL,
+                );";
+                // Table 2: Meetings 
+                string meetingTable = @"
+                    CREATE TABLE IF NOT EXISTS Meetings (
+                    Student TEXT PRIMARY KEY,
+                    Role TEXT,
+                    MeetingDate TEXT,
+                    Details TEXT,
+                    Supervisor TEXT,
                 );";
 
-                // Table 2: Basic user profile information (linked to Users)
-                string profilesTable = @"
+            // Table 3: Basic user profile information (linked to Users)
+            string profilesTable = @"
                 CREATE TABLE IF NOT EXISTS Profiles (
                     Username TEXT PRIMARY KEY,
                     Name TEXT,
-                    Age INTEGER,
-                    Year TEXT,
+                    Year INT,
                     FOREIGN KEY(Username) REFERENCES Users(Username)
                 );";
 
-                // Table 3: Student health and support information (linked to Users)
+                // Table 4: Student health and support information (linked to Users)
                 string healthTable = @"
                 CREATE TABLE IF NOT EXISTS HealthSupport (
                     Username TEXT PRIMARY KEY,
@@ -96,7 +102,7 @@ namespace DDD_program
                     FOREIGN KEY(Username) REFERENCES Users(Username)
                 );";
 
-                // Table 4: Report records (students or staff can create reports)
+                // Table 5: Report records (students or staff can create reports)
                 string reportsTable = @"
                 CREATE TABLE IF NOT EXISTS Reports (
                     ReportID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,7 +113,7 @@ namespace DDD_program
                     FOREIGN KEY(Username) REFERENCES Users(Username)
                 );";
 
-                // Table 5: System activity logs (tracks user actions)
+                // Table 6: System activity logs (tracks user actions)
                 string logsTable = @"
                 CREATE TABLE IF NOT EXISTS Logs (
                     LogID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,6 +129,7 @@ namespace DDD_program
                 using (var command = new SQLiteCommand(connection))
                 {
                     command.CommandText = usersTable; command.ExecuteNonQuery();
+                    command.CommandText = meetingTable; command.ExecuteNonQuery();
                     command.CommandText = profilesTable; command.ExecuteNonQuery();
                     command.CommandText = healthTable; command.ExecuteNonQuery();
                     command.CommandText = reportsTable; command.ExecuteNonQuery();

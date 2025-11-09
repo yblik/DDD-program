@@ -1,11 +1,12 @@
 ﻿using DDD_program.MenuLogic;
 using DDD_program.Menus;
+using DDD_program.Menus;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DDD_program.Menus;
 
 namespace DDD_program
 {
@@ -49,33 +50,88 @@ namespace DDD_program
                 selectedManager = true;
             }
         }
-        public void Login()  //uses console helper
+        public void Login()
         {
-            Name = ConsoleHelper.GetInput("Enter username");
-
-            //password = SQLlite -> Username -> their password
-
-            if (Name == "stu")
+            while (true) // loop until successful login
             {
-                SetProfile(1);
+                Console.WriteLine("Login or create new account by inputting: ''new'' ");
+                //Ask for username
+                string username = ConsoleHelper.GetInput("Enter username:");
+
+                if (username != "new")
+                {
+                    //Fetch the stored password and role from SQLite
+                    string storedPassword = null;
+                    string storedRole = null;
+
+                    using (var connection = SQLstorage.GetConnection())
+                    {
+                        connection.Open();
+                        string query = "SELECT Password, Role FROM Users WHERE Username = @username";
+                        using (var command = new SQLiteCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@username", username); 
+                            using (var reader = command.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    storedPassword = reader.GetString(0); // Password column
+                                    storedRole = reader.GetString(1);     // Role column
+                                }
+                            }
+                        }
+                    }
+
+                    // Step 3: If username not found, show error and loop
+                    if (storedPassword == null)
+                    {
+                        Console.WriteLine($"Username '{username}' not found. Try again or create new account.");
+                        continue; // loop back to ask for username
+                    }
+
+                    // Step 4: Prompt for password
+                    string inputPassword = ConsoleHelper.GetInput("Enter password:");
+
+                    // Step 5: Check password
+                    if (inputPassword != storedPassword)
+                    {
+                        Console.WriteLine("Incorrect password. Try again.");
+                        continue; // loop back to ask for username again
+                    }
+
+                    // Step 6: Successful login, set profile/role
+                    Name = username;
+
+                    switch (storedRole.ToLower())
+                    {
+                        case "student":
+                            SetProfile(1); // RoleID for student
+                            break;
+                        case "supervisor":
+                            SetProfile(2); // RoleID for supervisor
+                            break;
+                        case "senior tutor":
+                            SetProfile(3); // RoleID for senior tutor
+                            break;
+                        default:
+                            Console.WriteLine("Unknown role. Contact admin.");
+                            return;
+                    }
+                }
+
+                else
+                {
+                    CreateAccount CA = new CreateAccount();
+                    CA.CreateNewUser();
+                }
+                    // Step 7: Launch main menu
+                    MainMenu MM = new MainMenu(RoleID);
+                MM.Select();
+
+                break; // exit login loop after successful login
             }
-            else if(Name == "sup")
-            {
-                SetProfile(2);
-            }
-            else if (Name == "ST") 
-            {  
-                SetProfile(3); 
-            }
-
-            //for now this and no error checking
-            MainMenu MM = new MainMenu(RoleID);
-            MM.Select ();
-            //start menus
-
-
-
         }
+
 
     }
 }
