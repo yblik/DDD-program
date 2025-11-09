@@ -81,6 +81,7 @@ namespace DDD_program
                     MeetingDate TEXT,
                     Details TEXT,
                     Supervisor TEXT,
+                    Accepted BOOLEAN,    
                 );";
 
             // Table 3: Basic user profile information (linked to Users)
@@ -106,7 +107,8 @@ namespace DDD_program
                 string reportsTable = @"
                 CREATE TABLE IF NOT EXISTS Reports (
                     ReportID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Username TEXT,
+                    Username TEXT,                    
+                    Respondent TEXT,
                     Role TEXT,
                     ReportType TEXT,
                     Detail TEXT,
