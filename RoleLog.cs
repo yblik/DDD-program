@@ -135,3 +135,9 @@ namespace DDD_program
 
     }
 }
+/*SQLstorage.Initialize();
+SQLmanager.AddUserWithDetails("bob123", "password", "Student", "Bob Smith", 20, 2, "Happy", "None", "None");
+SQLmanager.AddLog("bob123", "Student", "Logged in");
+ * 
+ * 
+ */

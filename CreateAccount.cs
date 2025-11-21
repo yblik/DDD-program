@@ -35,7 +35,12 @@ namespace DDD_program
 
             // Step 4: Profile info
             string name = ConsoleHelper.GetInput("Enter full name:");
-            int year = 0;
+            string[] yearOptions = { "2023", "2024", "2025" };
+            int year = ConsoleHelper.GetSelectionFromMenu(yearOptions, "Enter years at establishment");
+            int age = ConsoleHelper.GetIntegerInRange(18, 90, "Enter age between 18 and 90");
+
+            //======other shi=======
+
 
             if (role == "Student")
             {
@@ -60,6 +65,7 @@ namespace DDD_program
                 role,
                 name,
                 year,
+                age,
                 feeling, //just fill table
                 ailments, //just fill table
                 hiddenAilments
