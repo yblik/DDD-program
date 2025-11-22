@@ -53,7 +53,7 @@ namespace DDD_program.Menus
 
             //logged in as student
             //Set meetings
-            _menuItems.Add(new SetMeetingMenuItem(Role));
+            _menuItems.Add(new SetMeetingMenuItem(Role, Username));
 
             //View profile
             _menuItems.Add(new ProfileMenuItem(Role, Username));

@@ -56,6 +56,7 @@ namespace DDD_program
                     MeetingDate TEXT,
                     Details TEXT,
                     Supervisor TEXT,
+                    FromStudent BOOLEAN DEFAULT 0,
                     Accepted BOOLEAN DEFAULT 0
                 );",
 
