@@ -12,12 +12,14 @@ namespace DDD_program.Menus
     class MainMenu: ConsoleMenu
     {
         public int Role { get; set; }
+        public string Username { get; set; }
 
         //plan is to have a calender ascii art table thing to be drawn out when logged in
 
-        public MainMenu(int role)
+        public MainMenu(int role, string un)
         {
             Role = role;
+            Username = un;
             //Schedule = new Scheduler();
             //concsv = new ConcessionCSV();
             //cuscsv = new CustomerCSV();
@@ -54,7 +56,7 @@ namespace DDD_program.Menus
             _menuItems.Add(new SetMeetingMenuItem(Role));
 
             //View profile
-            _menuItems.Add(new ProfileMenuItem(Role));
+            _menuItems.Add(new ProfileMenuItem(Role, Username));
             //meeting history
             _menuItems.Add(new MeetingHistoryMenuItem(Role));
             _menuItems.Add(new ViewMeetingsMenuItem(Role));

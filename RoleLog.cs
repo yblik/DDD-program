@@ -126,7 +126,7 @@ namespace DDD_program
                     continue; // important 
                 }
                 // Step 7: Launch main menu
-                MainMenu MM = new MainMenu(RoleID);
+                MainMenu MM = new MainMenu(RoleID, Name);
                 MM.Select();
 
                 break; // exit login loop after successful login

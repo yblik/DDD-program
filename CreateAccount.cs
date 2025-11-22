@@ -77,8 +77,8 @@ namespace DDD_program
                 password,
                 role,
                 name,
-                year,
                 age,
+                year,
                 feeling,
                 ailments,
                 hiddenAilments
