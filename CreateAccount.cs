@@ -1,15 +1,12 @@
 ﻿using DDD_program.MenuLogic;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DDD_program
 {
     internal class CreateAccount
     {
+        private const string AdminPassword = "SuperSecret123"; // temporary
+
         public void CreateNewUser()
         {
             Console.WriteLine("=== Create New User ===");
@@ -23,7 +20,8 @@ namespace DDD_program
                     break;
 
                 Console.WriteLine($"Username '{username}' already exists. Try another one.");
-            } while (true);
+            }
+            while (true);
 
             // Step 2: Password
             string password = ConsoleHelper.GetInput("Enter password:");
@@ -31,31 +29,46 @@ namespace DDD_program
             // Step 3: Role selection
             string[] roles = { "Student", "Supervisor", "Senior Tutor" };
             int roleIndex = ConsoleHelper.GetSelectionFromMenu(roles, "Select role:");
-            string role = roles[roleIndex]; // Convert index to role string- helps later with using index instead of word
+            string role = roles[roleIndex];
+
+            // === Admin Lock for Supervisor or Senior Tutor ===
+            if (role != "Student")
+            {
+                string adminTry = ConsoleHelper.GetInput("Enter admin password to create staff accounts:");
+
+                if (adminTry != AdminPassword)
+                {
+                    Console.WriteLine("Incorrect admin password. Defaulting to Student role.");
+                    role = "Student";
+                }
+            }
 
             // Step 4: Profile info
             string name = ConsoleHelper.GetInput("Enter full name:");
-            string[] yearOptions = { "2023", "2024", "2025" };
-            int year = ConsoleHelper.GetSelectionFromMenu(yearOptions, "Enter years at establishment");
+
+
             int age = ConsoleHelper.GetIntegerInRange(18, 90, "Enter age between 18 and 90");
 
-            //======other shi=======
-
-
+            // Student-only academic year adjustment
+            int year = 0;
             if (role == "Student")
             {
-                string msg = "Enter academic year(e.g., Year 1-4)";
-                year = ConsoleHelper.GetIntegerInRange(1, 4, msg);
+                string[] yearOptions = { "2023", "2024", "2025" };
+                year = roleIndex == 1 ?
+                    ConsoleHelper.GetSelectionFromMenu(yearOptions, "Enter years at establishment") :
+                    ConsoleHelper.GetIntegerInRange(1, 60, "Enter years at establishment");
             }
 
-            // Step 5: Health & Support info (optional, only for students)
+            // Step 5: Health & Support info (students only)
             string feeling = "";
             string ailments = "";
             string hiddenAilments = "";
+
             if (role == "Student")
             {
-                //ailments = ConsoleHelper.GetInput("Enter any known ailments (comma separated) or 'None':");
-                hiddenAilments = ConsoleHelper.GetInput("Enter any ailments (optional). (These are automatically hidden but can be shared in student profile):");
+                hiddenAilments = ConsoleHelper.GetInput(
+                    "Enter any ailments (optional — these are hidden unless shared):"
+                );
             }
 
             // Step 6: Add user to all tables using SQLmanager
@@ -66,12 +79,15 @@ namespace DDD_program
                 name,
                 year,
                 age,
-                feeling, //just fill table
-                ailments, //just fill table
+                feeling,
+                ailments,
                 hiddenAilments
             );
 
             Console.WriteLine($"User '{username}' successfully created!");
+            Console.WriteLine("Returning to login...\n");
+
+            return; //exit method to login
         }
     }
 }

@@ -123,9 +123,10 @@ namespace DDD_program
                 {
                     CreateAccount CA = new CreateAccount();
                     CA.CreateNewUser();
+                    continue; // important 
                 }
-                    // Step 7: Launch main menu
-                    MainMenu MM = new MainMenu(RoleID);
+                // Step 7: Launch main menu
+                MainMenu MM = new MainMenu(RoleID);
                 MM.Select();
 
                 break; // exit login loop after successful login
