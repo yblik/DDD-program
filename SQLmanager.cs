@@ -126,5 +126,195 @@ namespace DDD_program
                 Console.WriteLine($"SQLite Error (Log): {ex.Message}");
             }
         }
+
+
+        /// <summary>
+        /// TO GET ASSIGNMENT WORKING
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        // NEW: Get users by role for dropdown
+
+
+        public static List<string> GetUsernamesByRole(string role)
+        {
+            var usernames = new List<string>();
+
+            using (var connection = SQLstorage.GetConnection())
+            {
+                connection.Open();
+                string query = "SELECT Username FROM Users WHERE Role = @role ORDER BY Username";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@role", role);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            usernames.Add(reader["Username"].ToString());
+                        }
+                    }
+                }
+            }
+            return usernames;
+        }
+
+        // Method 2: Update the fucking table
+        public static bool AssignStudentToSupervisor(string studentUsername, string supervisorUsername)
+        {
+            using (var connection = SQLstorage.GetConnection())
+            {
+                connection.Open();
+
+                // 1. DEBUG: WHAT'S ACTUALLY IN THE FUCKING TABLE?
+                Console.WriteLine("=== DEBUG: Checking current state ===");
+
+                // Check if student exists
+                string checkStudentSql = "SELECT COUNT(*) FROM Profiles WHERE Username = @student";
+                using (var checkCmd = new SQLiteCommand(checkStudentSql, connection))
+                {
+                    checkCmd.Parameters.AddWithValue("@student", studentUsername);
+                    long studentCount = (long)checkCmd.ExecuteScalar();
+                    Console.WriteLine($"Student '{studentUsername}' exists: {studentCount > 0}");
+                }
+
+                // Check current Assigned value
+                string checkAssignedSql = "SELECT Assigned FROM Profiles WHERE Username = @student";
+                using (var checkCmd = new SQLiteCommand(checkAssignedSql, connection))
+                {
+                    checkCmd.Parameters.AddWithValue("@student", studentUsername);
+                    var currentAssigned = checkCmd.ExecuteScalar();
+                    Console.WriteLine($"Current Assigned value: {currentAssigned ?? "(null)"}");
+                }
+
+                // 2. JUST FUCKING TRY THE UPDATE
+                try
+                {
+                    string query = "UPDATE Profiles SET Assigned = @supervisor WHERE Username = @student";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                        command.Parameters.AddWithValue("@student", studentUsername);
+
+                        Console.WriteLine($"Executing: UPDATE Profiles SET Assigned = '{supervisorUsername}' WHERE Username = '{studentUsername}'");
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        Console.WriteLine($"Rows affected: {rowsAffected}");
+
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (SQLiteException ex)
+                {
+                    // 3. IF IT FAILS, SHOW US EXACTLY WHY
+                    Console.WriteLine($"SQL ERROR: {ex.Message}");
+
+                    // Check what columns ACTUALLY exist
+                    string pragmaSql = "PRAGMA table_info(Profiles)";
+                    using (var pragmaCmd = new SQLiteCommand(pragmaSql, connection))
+                    using (var reader = pragmaCmd.ExecuteReader())
+                    {
+                        Console.WriteLine("Actual columns in Profiles table:");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"  - {reader["name"]} ({reader["type"]})");
+                        }
+                    }
+
+                    return false;
+                }
+            }
+        }
+        public static List<(string Username, string Name)> GetUsersByRole(string role)
+        {
+            var users = new List<(string, string)>();
+
+            using (var connection = SQLstorage.GetConnection())
+            {
+                connection.Open();
+                string query = @"
+                SELECT u.Username, p.Name 
+                FROM Users u 
+                JOIN Profiles p ON u.Username = p.Username 
+                WHERE u.Role = @role
+                ORDER BY p.Name";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@role", role);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            users.Add((reader["Username"].ToString(), reader["Name"].ToString()));
+                        }
+                    }
+                }
+            }
+            return users;
+        }
+
+        // NEW: Get unassigned students
+        public static List<(string Username, string Name)> GetUnassignedStudents()
+        {
+            var students = new List<(string, string)>();
+
+            using (var connection = SQLstorage.GetConnection())
+            {
+                connection.Open();
+                string query = @"
+                SELECT u.Username, p.Name 
+                FROM Users u 
+                JOIN Profiles p ON u.Username = p.Username 
+                WHERE u.Role = 'Student' 
+                AND (p.Assigned IS NULL OR p.Assigned = '')
+                ORDER BY p.Name";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            students.Add((reader["Username"].ToString(), reader["Name"].ToString()));
+                        }
+                    }
+                }
+            }
+            return students;
+        }
+
+        // NEW: Get supervisor's current students
+        public static List<(string Username, string Name)> GetSupervisorStudents(string supervisorUsername)
+        {
+            var students = new List<(string, string)>();
+
+            using (var connection = SQLstorage.GetConnection())
+            {
+                connection.Open();
+                string query = @"
+                SELECT p.Username, p.Name 
+                FROM Profiles p
+                JOIN Users u ON p.Username = u.Username
+                WHERE p.Assigned = @supervisorUsername
+                AND u.Role = 'Student'
+                ORDER BY p.Name";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@supervisorUsername", supervisorUsername);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            students.Add((reader["Username"].ToString(), reader["Name"].ToString()));
+                        }
+                    }
+                }
+            }
+            return students;
+        }
     }
 }

@@ -67,6 +67,7 @@ namespace DDD_program
                     Year INTEGER,
                     Assigned TEXT,  
                     FOREIGN KEY(Username) REFERENCES Users(Username) ON DELETE CASCADE
+
                 );",
 
                 @"CREATE TABLE IF NOT EXISTS HealthSupport (

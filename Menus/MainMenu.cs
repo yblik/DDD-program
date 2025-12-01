@@ -47,6 +47,7 @@ namespace DDD_program.Menus
         }
         public override void CreateMenu()
         {
+
             DrawCalendar();
             _menuItems.Clear();
             //TODO add menu items based on role
