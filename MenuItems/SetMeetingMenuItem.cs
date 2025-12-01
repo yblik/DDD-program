@@ -7,9 +7,9 @@ namespace DDD_program.MenuItems
 {
     internal class SetMeetingMenuItem : MenuItem
     {
-        private int Role { get; set; }
-        private string Username { get; set; }
-        private string UserRoleName { get; set; }
+        private int Role { get; }
+        private string Username { get; }
+        private string UserRoleName { get; }
 
         public SetMeetingMenuItem(int role, string username)
         {
@@ -18,14 +18,12 @@ namespace DDD_program.MenuItems
             UserRoleName = GetRoleName(role);
         }
 
-        public override string MenuText()
-        {
-            return "Set Meeting";
-        }
+        public override string MenuText() => "Set Meeting";
 
         public override void Select()
         {
-            Console.WriteLine("\n=== SET MEETING ===");
+            Console.Clear();
+            Console.WriteLine("=== SET MEETING ===\n");
 
             try
             {
@@ -42,67 +40,81 @@ namespace DDD_program.MenuItems
 
         private void SetMeeting()
         {
-            // Get student name
-            string studentName = GetStudentName();
-            if (string.IsNullOrEmpty(studentName))
+            string studentUsername = null;
+            string supervisorUsername = null;
+
+            if (Role == 1) // Student
             {
-                Console.WriteLine("No student selected. Meeting creation cancelled.");
-                return;
+                studentUsername = Username;
+                supervisorUsername = GetAssignedSupervisor(studentUsername);
+
+                if (string.IsNullOrEmpty(supervisorUsername))
+                {
+                    Console.WriteLine("No assigned supervisor found. Meeting creation cancelled.");
+                    return;
+                }
+            }
+            else if (Role == 2) // Supervisor
+            {
+                supervisorUsername = Username;
+                var assignedStudents = GetAssignedStudents(supervisorUsername);
+                if (assignedStudents.Count == 0)
+                {
+                    Console.WriteLine("No students assigned to you.");
+                    return;
+                }
+
+                // Supervisor selects student
+                studentUsername = SelectUserFromList(assignedStudents, "Select student for the meeting:");
+            }
+            else if (Role == 3) // Senior Tutor
+            {
+                // Senior tutor can select both supervisor and student
+                var supervisors = GetAvailableUsers("supervisor");
+                if (supervisors.Count == 0)
+                {
+                    Console.WriteLine("No supervisors available.");
+                    return;
+                }
+                supervisorUsername = SelectUserFromList(supervisors, "Select supervisor for the meeting:");
+
+                var students = GetAvailableUsers("student");
+                if (students.Count == 0)
+                {
+                    Console.WriteLine("No students available.");
+                    return;
+                }
+                studentUsername = SelectUserFromList(students, "Select student for the meeting:");
             }
 
-            // Get supervisor name
-            string supervisorName = GetSupervisorName();
-            if (string.IsNullOrEmpty(supervisorName))
-            {
-                Console.WriteLine("No supervisor selected. Meeting creation cancelled.");
-                return;
-            }
+            // Meeting details
+            string date = ConsoleHelper.GetInput("Enter meeting date (YYYY-MM-DD): ");
+            if (string.IsNullOrEmpty(date)) { Console.WriteLine("Meeting date is required."); return; }
 
-            // Get meeting details
-            string meetingDate = GetMeetingDate();
-            if (string.IsNullOrEmpty(meetingDate))
-            {
-                Console.WriteLine("Meeting date is required.");
-                return;
-            }
-
-            string meetingTime = GetMeetingTime();
-            if (string.IsNullOrEmpty(meetingTime))
-            {
-                Console.WriteLine("Meeting time is required.");
-                return;
-            }
+            string time = ConsoleHelper.GetInput("Enter meeting time (HH:MM): ");
+            if (string.IsNullOrEmpty(time)) { Console.WriteLine("Meeting time is required."); return; }
 
             string details = ConsoleHelper.GetInput("Enter meeting details: ");
-            if (string.IsNullOrEmpty(details))
-            {
-                details = "No details provided";
-            }
+            if (string.IsNullOrEmpty(details)) details = "No details provided";
 
-            // Combine date and time
-            string fullMeetingDateTime = $"{meetingDate} {meetingTime}";
+            string fullDateTime = $"{date} {time}";
+            bool fromStudent = Role == 1;
 
-            // Determine if this is from a student
-            bool fromStudent = (Role == 1) ? true: false; // Role 1 is student
-
-            // Confirm meeting creation
-            string initiator = fromStudent ? "Student" : UserRoleName;
+            // Confirm creation
             string confirmationMessage =
                 $"\nCreate meeting?\n" +
-                $"Student: {studentName}\n" +
-                $"Supervisor: {supervisorName}\n" +
-                $"Date/Time: {fullMeetingDateTime}\n" +
+                $"Student: {GetName(studentUsername)}\n" +
+                $"Supervisor: {GetName(supervisorUsername)}\n" +
+                $"Date/Time: {fullDateTime}\n" +
                 $"Details: {details}\n" +
-                $"Initiator: {initiator}\n\n" +
-                $"Proceed with creation?";
+                $"Initiator: {(fromStudent ? "Student" : UserRoleName)}";
 
-            // Use selection menu for confirmation
             string[] confirmOptions = { "Yes, create meeting", "No, cancel" };
             int confirmChoice = ConsoleHelper.GetSelectionFromMenu(confirmOptions, confirmationMessage);
 
-            if (confirmChoice == 0) // Yes
+            if (confirmChoice == 0)
             {
-                CreateMeeting(studentName, UserRoleName, fullMeetingDateTime, details, supervisorName, fromStudent);
+                InsertMeeting(studentUsername, supervisorUsername, fullDateTime, details, fromStudent);
                 Console.WriteLine("Meeting created successfully!");
             }
             else
@@ -111,141 +123,89 @@ namespace DDD_program.MenuItems
             }
         }
 
-        private string GetStudentName()
+        private string SelectUserFromList(List<string> usernames, string prompt)
         {
-            if (Role == 1) // If current user is a student, use their own name
-            {
-                return GetUserName(Username);
-            }
+            var displayNames = new List<string>();
+            foreach (var u in usernames)
+                displayNames.Add($"{GetName(u)} ({u})");
 
-            var students = GetAvailableUsers("student");
-            if (students.Count == 0)
-            {
-                Console.WriteLine("No students available.");
-                return null;
-            }
-
-            // Create display names for the menu
-            var studentDisplayNames = new List<string>();
-            foreach (var student in students)
-            {
-                string displayName = GetUserName(student);
-                studentDisplayNames.Add($"{displayName} ({student})");
-            }
-
-            int choice = ConsoleHelper.GetSelectionFromMenu(studentDisplayNames, "\nSelect student:");
-            return students[choice];
+            int choice = ConsoleHelper.GetSelectionFromMenu(displayNames, prompt);
+            return usernames[choice];
         }
 
-        private string GetSupervisorName()
+        private string GetAssignedSupervisor(string studentUsername)
         {
-            if (Role == 2) // If current user is a supervisor, use their own name
-            {
-                return Username;
-            }
-
-            var supervisors = GetAvailableUsers("supervisor");
-            if (supervisors.Count == 0)
-            {
-                Console.WriteLine("No supervisors available.");
-                return null;
-            }
-
-            // Create display names for the menu
-            var supervisorDisplayNames = new List<string>();
-            foreach (var supervisor in supervisors)
-            {
-                string displayName = GetUserName(supervisor);
-                supervisorDisplayNames.Add($"{displayName} ({supervisor})");
-            }
-
-            int choice = ConsoleHelper.GetSelectionFromMenu(supervisorDisplayNames, "\nSelect supervisor:");
-            return supervisors[choice];
+            using var conn = SQLstorage.GetConnection();
+            conn.Open();
+            using var cmd = new SQLiteCommand("SELECT Assigned FROM Profiles WHERE Username=@u", conn);
+            cmd.Parameters.AddWithValue("@u", studentUsername);
+            var result = cmd.ExecuteScalar();
+            return result?.ToString();
         }
 
-        private string GetMeetingDate()
+        private List<string> GetAssignedStudents(string supervisorUsername)
         {
-            // Use GetInput for date (could be enhanced with validation)
-            return ConsoleHelper.GetInput("Enter meeting date (YYYY-MM-DD): ");
-        }
-
-        private string GetMeetingTime()
-        {
-            // Use GetInput for time (could be enhanced with validation)
-            return ConsoleHelper.GetInput("Enter meeting time (HH:MM): ");
-        }
-
-        private string GetUserName(string username)
-        {
-            using (var conn = SQLstorage.GetConnection())
+            var list = new List<string>();
+            using var conn = SQLstorage.GetConnection();
+            conn.Open();
+            using var cmd = new SQLiteCommand("SELECT Assigned FROM Profiles WHERE Username=@u", conn);
+            cmd.Parameters.AddWithValue("@u", supervisorUsername);
+            var result = cmd.ExecuteScalar();
+            if (result != null)
             {
-                conn.Open();
-                string sql = "SELECT Name FROM Profiles WHERE Username = @username";
-                using (var cmd = new SQLiteCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@username", username);
-                    var result = cmd.ExecuteScalar();
-                    return result?.ToString() ?? username; // Return name if found, otherwise return username
-                }
+                foreach (var student in result.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    list.Add(student.Trim());
             }
+            return list;
         }
 
         private List<string> GetAvailableUsers(string role)
         {
             var users = new List<string>();
-
-            using (var conn = SQLstorage.GetConnection())
+            using var conn = SQLstorage.GetConnection();
+            conn.Open();
+            using var cmd = new SQLiteCommand("SELECT Username FROM Users WHERE Role=@role", conn);
+            cmd.Parameters.AddWithValue("@role", role);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
             {
-                conn.Open();
-                string sql = "SELECT Username FROM Users WHERE Role = @role";
-                using (var cmd = new SQLiteCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@role", role);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            users.Add(reader["Username"].ToString());
-                        }
-                    }
-                }
+                users.Add(reader["Username"].ToString());
             }
-
             return users;
         }
 
-        private void CreateMeeting(string student, string role, string meetingDateTime, string details, string supervisor, bool fromStudent)
+        private string GetName(string username)
         {
-            using (var conn = SQLstorage.GetConnection())
-            {
-                conn.Open();
-                string sql = @"INSERT INTO Meetings (Student, Role, MeetingDate, Details, Supervisor, FromStudent, Accepted) 
-                              VALUES (@student, @role, @meetingDate, @details, @supervisor, @fromStudent, @accepted)";
-
-                using (var cmd = new SQLiteCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@student", student);
-                    cmd.Parameters.AddWithValue("@role", role);
-                    cmd.Parameters.AddWithValue("@meetingDate", meetingDateTime);
-                    cmd.Parameters.AddWithValue("@details", details);
-                    cmd.Parameters.AddWithValue("@supervisor", supervisor);
-                    cmd.Parameters.AddWithValue("@fromStudent", fromStudent);
-                    cmd.Parameters.AddWithValue("@accepted", false); // Default to not accepted
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            using var conn = SQLstorage.GetConnection();
+            conn.Open();
+            using var cmd = new SQLiteCommand("SELECT Name FROM Profiles WHERE Username=@u", conn);
+            cmd.Parameters.AddWithValue("@u", username);
+            var result = cmd.ExecuteScalar();
+            return result?.ToString() ?? username;
         }
 
-        private string GetRoleName(int role)
+        private void InsertMeeting(string student, string supervisor, string dateTime, string details, bool fromStudent)
         {
-            return role switch
-            {
-                1 => "Student",
-                2 => "Supervisor",
-                3 => "SeniorTutor",
-                _ => "User"
-            };
+            using var conn = SQLstorage.GetConnection();
+            conn.Open();
+            string sql = @"INSERT INTO Meetings (Student, Supervisor, MeetingDate, Details, FromStudent, Accepted)
+                           VALUES (@student, @supervisor, @dateTime, @details, @fromStudent, @accepted)";
+            using var cmd = new SQLiteCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@student", student);
+            cmd.Parameters.AddWithValue("@supervisor", supervisor);
+            cmd.Parameters.AddWithValue("@dateTime", dateTime);
+            cmd.Parameters.AddWithValue("@details", details);
+            cmd.Parameters.AddWithValue("@fromStudent", fromStudent);
+            cmd.Parameters.AddWithValue("@accepted", false);
+            cmd.ExecuteNonQuery();
         }
+
+        private string GetRoleName(int role) => role switch
+        {
+            1 => "Student",
+            2 => "Supervisor",
+            3 => "SeniorTutor",
+            _ => "User"
+        };
     }
 }
