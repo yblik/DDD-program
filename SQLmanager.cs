@@ -167,32 +167,68 @@ namespace DDD_program
             {
                 connection.Open();
 
-                // Try to update. If no row is updated, then insert.
-                string updateSql = "UPDATE Profiles SET Assigned = @supervisor WHERE Username = @student";
-                using (var updateCmd = new SQLiteCommand(updateSql, connection))
+                // 1. Assign supervisor to student (overwrite previous supervisor)
+                string updateStudentSql = @"
+            UPDATE Profiles 
+            SET Assigned = @supervisor 
+            WHERE Username = @student";
+
+                using (var cmd = new SQLiteCommand(updateStudentSql, connection))
                 {
-                    updateCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
-                    updateCmd.Parameters.AddWithValue("@student", studentUsername);
-                    int rowsAffected = updateCmd.ExecuteNonQuery();
-                    if (rowsAffected > 0)
+                    cmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                    cmd.Parameters.AddWithValue("@student", studentUsername);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected == 0) // student doesn't exist yet
                     {
-                        return true;
+                        string insertStudentSql = @"
+                    INSERT INTO Profiles (Username, Name, Age, Year, Assigned)
+                    VALUES (@student, NULL, NULL, NULL, @supervisor)";
+                        using (var insertCmd = new SQLiteCommand(insertStudentSql, connection))
+                        {
+                            insertCmd.Parameters.AddWithValue("@student", studentUsername);
+                            insertCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                            insertCmd.ExecuteNonQuery();
+                        }
                     }
                 }
 
-                // If no row was updated, then insert a new row.
-                string insertSql = @"
-            INSERT INTO Profiles (Username, Name, Age, Year, Assigned)
-            VALUES (@student, NULL, NULL, NULL, @supervisor)";
-                using (var insertCmd = new SQLiteCommand(insertSql, connection))
+                // 2. Add student to supervisor's Assigned CSV (avoid duplicates)
+                string updateSupervisorSql = @"
+            UPDATE Profiles
+            SET Assigned = CASE
+                WHEN Assigned IS NULL OR Assigned = '' THEN @student
+                WHEN ',' || Assigned || ',' NOT LIKE '%,' || @student || ',%' THEN Assigned || ',' || @student
+                ELSE Assigned
+            END
+            WHERE Username = @supervisor";
+
+                using (var cmd = new SQLiteCommand(updateSupervisorSql, connection))
                 {
-                    insertCmd.Parameters.AddWithValue("@student", studentUsername);
-                    insertCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
-                    insertCmd.ExecuteNonQuery();
+                    cmd.Parameters.AddWithValue("@student", studentUsername);
+                    cmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected == 0) // supervisor doesn't exist yet
+                    {
+                        string insertSupervisorSql = @"
+                    INSERT INTO Profiles (Username, Name, Age, Year, Assigned)
+                    VALUES (@supervisor, NULL, NULL, NULL, @student)";
+                        using (var insertCmd = new SQLiteCommand(insertSupervisorSql, connection))
+                        {
+                            insertCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                            insertCmd.Parameters.AddWithValue("@student", studentUsername);
+                            insertCmd.ExecuteNonQuery();
+                        }
+                    }
                 }
+
                 return true;
             }
         }
+
         public static List<(string Username, string Name)> GetUsersByRole(string role)
         {
             var users = new List<(string, string)>();
