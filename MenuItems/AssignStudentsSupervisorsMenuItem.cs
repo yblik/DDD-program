@@ -133,16 +133,21 @@ namespace DDD_program.MenuItems
             using (var conn = SQLstorage.GetConnection())
             {
                 conn.Open();
-                string sql = "SELECT Username FROM Users WHERE Role = @role";
+                string sql = @"
+            SELECT u.Username
+            FROM Users u
+            LEFT JOIN Profiles p ON u.Username = p.Username
+            WHERE u.Role = @role
+            AND (p.Assigned IS NULL OR p.Assigned = '')
+        ";
+
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@role", role);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {
                             users.Add(reader["Username"].ToString());
-                        }
                     }
                 }
             }
@@ -150,49 +155,33 @@ namespace DDD_program.MenuItems
             return users;
         }
 
+
         private List<string> GetAvailableStudentsForSupervisor(string supervisorUsername)
         {
-            var availableStudents = new List<string>();
+            var students = new List<string>();
 
             using (var conn = SQLstorage.GetConnection())
             {
                 conn.Open();
+                string sql = @"
+            SELECT u.Username
+            FROM Users u
+            LEFT JOIN Profiles p ON u.Username = p.Username
+            WHERE u.Role = 'student'
+            AND (p.Assigned IS NULL OR p.Assigned = '')
+        ";
 
-                // Get all students
-                string allStudentsSql = "SELECT Username FROM Users WHERE Role = 'student'";
-                var allStudents = new List<string>();
-
-                using (var cmd = new SQLiteCommand(allStudentsSql, conn))
+                using (var cmd = new SQLiteCommand(sql, conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
-                    {
-                        allStudents.Add(reader["Username"].ToString());
-                    }
+                        students.Add(reader["Username"].ToString());
                 }
-
-                // Get students already assigned to this supervisor
-                string assignedStudentsSql = "SELECT Student FROM SupervisorAssignments WHERE Supervisor = @supervisor";
-                var assignedStudents = new List<string>();
-
-                using (var cmd = new SQLiteCommand(assignedStudentsSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            assignedStudents.Add(reader["Student"].ToString());
-                        }
-                    }
-                }
-
-                // Return students not already assigned to this supervisor
-                availableStudents = allStudents.Except(assignedStudents).ToList();
             }
 
-            return availableStudents;
+            return students;
         }
+
 
         private void AssignStudentToSupervisor(string studentUsername, string supervisorUsername)
         {
@@ -200,29 +189,39 @@ namespace DDD_program.MenuItems
             {
                 conn.Open();
 
-                // Create SupervisorAssignments table if it doesn't exist
-                string createTableSql = @"
-                    CREATE TABLE IF NOT EXISTS SupervisorAssignments (
-                        AssignmentID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Student TEXT NOT NULL,
-                        Supervisor TEXT NOT NULL,
-                        AssignedDate TEXT DEFAULT CURRENT_TIMESTAMP,
-                        UNIQUE(Student, Supervisor),
-                        FOREIGN KEY(Student) REFERENCES Users(Username),
-                        FOREIGN KEY(Supervisor) REFERENCES Users(Username)
-                    )";
+                // Ensure Assigned column exists
+                string alterSql = @"
+            ALTER TABLE Profiles 
+            ADD COLUMN Assigned TEXT DEFAULT NULL;
+        ";
 
-                using (var cmd = new SQLiteCommand(createTableSql, conn))
+                using (var cmd = new SQLiteCommand(alterSql, conn))
                 {
+                    try { cmd.ExecuteNonQuery(); } catch { /* Column already exists */ }
+                }
+
+                // 1. Assign supervisor to student
+                string assignStudentSql = @"
+            UPDATE Profiles
+            SET Assigned = @supervisor
+            WHERE Username = @student
+        ";
+
+                using (var cmd = new SQLiteCommand(assignStudentSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                    cmd.Parameters.AddWithValue("@student", studentUsername);
                     cmd.ExecuteNonQuery();
                 }
 
-                // Insert assignment
-                string insertSql = @"
-                    INSERT OR REPLACE INTO SupervisorAssignments (Student, Supervisor) 
-                    VALUES (@student, @supervisor)";
+                // 2. Assign student to supervisor
+                string assignSupervisorSql = @"
+            UPDATE Profiles
+            SET Assigned = @student
+            WHERE Username = @supervisor
+        ";
 
-                using (var cmd = new SQLiteCommand(insertSql, conn))
+                using (var cmd = new SQLiteCommand(assignSupervisorSql, conn))
                 {
                     cmd.Parameters.AddWithValue("@student", studentUsername);
                     cmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
@@ -230,6 +229,7 @@ namespace DDD_program.MenuItems
                 }
             }
         }
+
 
         private string GetUserName(string username)
         {

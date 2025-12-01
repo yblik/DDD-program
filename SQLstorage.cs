@@ -65,6 +65,7 @@ namespace DDD_program
                     Name TEXT,
                     Age INTEGER,
                     Year INTEGER,
+                    Assigned TEXT,  
                     FOREIGN KEY(Username) REFERENCES Users(Username) ON DELETE CASCADE
                 );",
 
@@ -111,9 +112,9 @@ namespace DDD_program
         {
             // Insert some default users for testing
             string[] defaultUsers = {
-                "INSERT INTO Users (Username, Password, Role, Age) VALUES ('student1', 'pass', 'student', 20);",
-                "INSERT INTO Users (Username, Password, Role, Age) VALUES ('supervisor1', 'pass', 'supervisor', 35);",
-                "INSERT INTO Profiles (Username, Name, Age, Year) VALUES ('student1', 'John Doe', 20, 2);",
+                "INSERT INTO Users (Username, Password, Role, Age) VALUES ('student1', 'pass', 'Student', 20);",
+                "INSERT INTO Users (Username, Password, Role, Age) VALUES ('supervisor1', 'pass', 'Supervisor', 35);",
+                "INSERT INTO Profiles (Username, Name, Age, Year) VALUES ('student1', 'John Doe', 20, 2, null);",
                 "INSERT INTO HealthSupport (Username, Feeling, Ailments, HiddenAilments) VALUES ('student1', 'Good', 'None', 1);"
             };
 

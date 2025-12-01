@@ -60,6 +60,10 @@ namespace DDD_program.Menus
             //meeting history
             _menuItems.Add(new MeetingHistoryMenuItem(Role));
             _menuItems.Add(new ViewMeetingsMenuItem(Role));
+            if (Role == 3)
+            {
+                _menuItems.Add(new AssignStudentsSupervisorsMenuItem());
+            }
 
 
             //report faculty 
