@@ -33,7 +33,7 @@ namespace DDD_program
             int year,
             string feeling = "",
             string ailments = "",
-            string hiddenAilments = "")
+            int hiddenAilments = 0)
         {
             if (RecordExists("Users", "Username", username))
             {

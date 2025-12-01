@@ -54,19 +54,21 @@ namespace DDD_program
             if (role == "Student")
             {
                 string[] yearOptions = { "2023", "2024", "2025" };
-                year = roleIndex == 1 ?
-                    ConsoleHelper.GetSelectionFromMenu(yearOptions, "Enter years at establishment") :
-                    ConsoleHelper.GetIntegerInRange(1, 60, "Enter years at establishment");
+                year = ConsoleHelper.GetSelectionFromMenu(yearOptions, "Enter years at establishment");
+            }
+            else if (role != "Student")
+            {
+                year = ConsoleHelper.GetIntegerInRange(1, 60, "Enter years at establishment");
             }
 
-            // Step 5: Health & Support info (students only)
-            string feeling = "";
+                // Step 5: Health & Support info (students only)
+                string feeling = "";
             string ailments = "";
-            string hiddenAilments = "";
+            int hiddenAilments = 1;// for now, 0 means none hidden, 1 means some hidden
 
             if (role == "Student")
             {
-                hiddenAilments = ConsoleHelper.GetInput(
+                ailments = ConsoleHelper.GetInput(
                     "Enter any ailments (optional — these are hidden unless shared):"
                 );
             }
