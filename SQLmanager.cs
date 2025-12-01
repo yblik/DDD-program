@@ -167,64 +167,30 @@ namespace DDD_program
             {
                 connection.Open();
 
-                // 1. DEBUG: WHAT'S ACTUALLY IN THE FUCKING TABLE?
-                Console.WriteLine("=== DEBUG: Checking current state ===");
-
-                // Check if student exists
-                string checkStudentSql = "SELECT COUNT(*) FROM Profiles WHERE Username = @student";
-                using (var checkCmd = new SQLiteCommand(checkStudentSql, connection))
+                // Try to update. If no row is updated, then insert.
+                string updateSql = "UPDATE Profiles SET Assigned = @supervisor WHERE Username = @student";
+                using (var updateCmd = new SQLiteCommand(updateSql, connection))
                 {
-                    checkCmd.Parameters.AddWithValue("@student", studentUsername);
-                    long studentCount = (long)checkCmd.ExecuteScalar();
-                    Console.WriteLine($"Student '{studentUsername}' exists: {studentCount > 0}");
-                }
-
-                // Check current Assigned value
-                string checkAssignedSql = "SELECT Assigned FROM Profiles WHERE Username = @student";
-                using (var checkCmd = new SQLiteCommand(checkAssignedSql, connection))
-                {
-                    checkCmd.Parameters.AddWithValue("@student", studentUsername);
-                    var currentAssigned = checkCmd.ExecuteScalar();
-                    Console.WriteLine($"Current Assigned value: {currentAssigned ?? "(null)"}");
-                }
-
-                // 2. JUST FUCKING TRY THE UPDATE
-                try
-                {
-                    string query = "UPDATE Profiles SET Assigned = @supervisor WHERE Username = @student";
-
-                    using (var command = new SQLiteCommand(query, connection))
+                    updateCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                    updateCmd.Parameters.AddWithValue("@student", studentUsername);
+                    int rowsAffected = updateCmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
                     {
-                        command.Parameters.AddWithValue("@supervisor", supervisorUsername);
-                        command.Parameters.AddWithValue("@student", studentUsername);
-
-                        Console.WriteLine($"Executing: UPDATE Profiles SET Assigned = '{supervisorUsername}' WHERE Username = '{studentUsername}'");
-
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"Rows affected: {rowsAffected}");
-
-                        return rowsAffected > 0;
+                        return true;
                     }
                 }
-                catch (SQLiteException ex)
+
+                // If no row was updated, then insert a new row.
+                string insertSql = @"
+            INSERT INTO Profiles (Username, Name, Age, Year, Assigned)
+            VALUES (@student, NULL, NULL, NULL, @supervisor)";
+                using (var insertCmd = new SQLiteCommand(insertSql, connection))
                 {
-                    // 3. IF IT FAILS, SHOW US EXACTLY WHY
-                    Console.WriteLine($"SQL ERROR: {ex.Message}");
-
-                    // Check what columns ACTUALLY exist
-                    string pragmaSql = "PRAGMA table_info(Profiles)";
-                    using (var pragmaCmd = new SQLiteCommand(pragmaSql, connection))
-                    using (var reader = pragmaCmd.ExecuteReader())
-                    {
-                        Console.WriteLine("Actual columns in Profiles table:");
-                        while (reader.Read())
-                        {
-                            Console.WriteLine($"  - {reader["name"]} ({reader["type"]})");
-                        }
-                    }
-
-                    return false;
+                    insertCmd.Parameters.AddWithValue("@student", studentUsername);
+                    insertCmd.Parameters.AddWithValue("@supervisor", supervisorUsername);
+                    insertCmd.ExecuteNonQuery();
                 }
+                return true;
             }
         }
         public static List<(string Username, string Name)> GetUsersByRole(string role)
