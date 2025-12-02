@@ -84,7 +84,7 @@ namespace DDD_program.Menus
 
 
             //report faculty 
-            _menuItems.Add(new ReportMenuItem(Role));
+            _menuItems.Add(new ReportMenuItem(Role, Username));
 
             //_menuItems.Add(new SelectFilmCustomerMenuItem(Schedule, ID, this)); //this for exitting
             //_menuItems.Add(new SelectConcessCustomerMenuItem(this, concsv, ID)); //this for exitting
