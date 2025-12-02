@@ -40,9 +40,11 @@ namespace DDD_program.Menus
         {
             //draw ascii art calendar
             Console.WriteLine("---------------------------------------------------");
-            Console.WriteLine("Upcoming meetings:");
-            Console.WriteLine("10.11.26 - [confirmed]");
-            Console.WriteLine("26.11.26 - [need confirmation]");
+            //Console.WriteLine("Upcoming meetings:");
+            //Console.WriteLine("10.11.26 - [confirmed]");
+            //Console.WriteLine("26.11.26 - [need confirmation]");
+            new MeetingHUD(Username).DrawHUD();
+
             Console.WriteLine("---------------------------------------------------");
         }
         public override void CreateMenu()

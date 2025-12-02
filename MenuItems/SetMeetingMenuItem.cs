@@ -94,6 +94,20 @@ namespace DDD_program.MenuItems
             string time = ConsoleHelper.GetInput("Enter meeting time (HH:MM): ");
             if (string.IsNullOrEmpty(time)) { Console.WriteLine("Meeting time is required."); return; }
 
+            string[] meetingTypes =
+            {
+                "General",
+                "Academic",
+                "Behavioural",
+                "Emergency",
+                "Supervisor Request",
+                "Student Request"
+            };
+
+            int typeChoice = ConsoleHelper.GetSelectionFromMenu(meetingTypes, "Select meeting type:");
+            string meetingType = meetingTypes[typeChoice];
+
+
             string details = ConsoleHelper.GetInput("Enter meeting details: ");
             if (string.IsNullOrEmpty(details)) details = "No details provided";
 
@@ -114,7 +128,7 @@ namespace DDD_program.MenuItems
 
             if (confirmChoice == 0)
             {
-                InsertMeeting(studentUsername, supervisorUsername, fullDateTime, details, fromStudent);
+                InsertMeeting(studentUsername, supervisorUsername, fullDateTime, details, meetingType, fromStudent);
                 Console.WriteLine("Meeting created successfully!");
             }
             else
@@ -184,21 +198,29 @@ namespace DDD_program.MenuItems
             return result?.ToString() ?? username;
         }
 
-        private void InsertMeeting(string student, string supervisor, string dateTime, string details, bool fromStudent)
+        private void InsertMeeting(string student, string supervisor, string dateTime, string details, string meetingType, bool fromStudent)
         {
             using var conn = SQLstorage.GetConnection();
             conn.Open();
-            string sql = @"INSERT INTO Meetings (Student, Supervisor, MeetingDate, Details, FromStudent, Accepted)
-                           VALUES (@student, @supervisor, @dateTime, @details, @fromStudent, @accepted)";
+
+            string sql = @"
+        INSERT INTO Meetings 
+        (Student, Supervisor, MeetingDate, Details, MeetingType, FromStudent, Accepted)
+        VALUES (@student, @supervisor, @dateTime, @details, @meetingType, @fromStudent, @accepted)
+    ";
+
             using var cmd = new SQLiteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@student", student);
             cmd.Parameters.AddWithValue("@supervisor", supervisor);
             cmd.Parameters.AddWithValue("@dateTime", dateTime);
             cmd.Parameters.AddWithValue("@details", details);
+            cmd.Parameters.AddWithValue("@meetingType", meetingType);
             cmd.Parameters.AddWithValue("@fromStudent", fromStudent);
             cmd.Parameters.AddWithValue("@accepted", false);
+
             cmd.ExecuteNonQuery();
         }
+
 
         private string GetRoleName(int role) => role switch
         {

@@ -51,6 +51,7 @@ namespace DDD_program
 
                 @"CREATE TABLE IF NOT EXISTS Meetings (
                     MeetingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    MeetingType INTEGER,
                     Student TEXT,
                     Role TEXT,
                     MeetingDate TEXT,

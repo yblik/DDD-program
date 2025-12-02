@@ -1,59 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using DDD_program.MenuLogic;
 
 namespace DDD_program.MenuItems
 {
-    internal class MeetingNotificationsMenuItem : MenuItem
+    internal class MeetingHUD
     {
         private string Username { get; }
 
-        public MeetingNotificationsMenuItem(string username)
+        public MeetingHUD(string username)
         {
             Username = username;
         }
 
-        public override string MenuText() => "View Meeting Notifications";
-
-        public override void Select()
+        public void DrawHUD()
         {
-            Console.Clear();
-            Console.WriteLine("=== MEETING NOTIFICATIONS ===\n");
+            Console.WriteLine("=== MEETINGS OVERVIEW ===\n");
 
-            var meetings = GetPendingMeetings(Username);
+            var allMeetings = LoadMeetings(Username);
 
-            if (meetings.Count == 0)
+            var pending = new List<Meeting>();
+            var upcoming = new List<Meeting>();
+
+            foreach (var m in allMeetings)
             {
-                Console.WriteLine("You have no pending meetings.");
-                Console.ReadLine();
+                if (!m.Accepted)
+                {
+                    pending.Add(m);
+                }
+                else
+                {
+                    if (DateTime.TryParse(m.MeetingDate, out DateTime date))
+                    {
+                        if (date > DateTime.Now)
+                            upcoming.Add(m);
+                    }
+                }
+            }
+
+            PrintSection("NEW / PENDING MEETINGS", pending);
+            PrintSection("UPCOMING MEETINGS", upcoming);
+            //PrintSection("PAST MEETINGS", past);
+        }
+
+        private void PrintSection(string title, List<Meeting> list)
+        {
+            Console.WriteLine($"--- {title} ---");
+
+            if (list.Count == 0)
+            {
+                Console.WriteLine("   None\n");
                 return;
             }
 
-            for (int i = 0; i < meetings.Count; i++)
+            foreach (var m in list)
             {
-                var m = meetings[i];
-                Console.WriteLine($"{i + 1}. Meeting with {GetOtherParty(m)}");
-                Console.WriteLine($"   Date/Time: {m.MeetingDate}");
-                Console.WriteLine($"   Details: {m.Details}");
-                Console.WriteLine($"   From Student: {(m.FromStudent ? "Yes" : "No")}");
-                Console.WriteLine(new string('-', 30));
+                Console.WriteLine($"• With: {GetOtherParty(m)}");
+                Console.WriteLine($"  Date: {m.MeetingDate}");
+                Console.WriteLine($"  Type: {m.MeetingType}");
+                Console.WriteLine($"  Details: {m.Details}");
+                Console.WriteLine($"  From Student: {(m.FromStudent ? "Yes" : "No")}");
+                Console.WriteLine();
             }
-
-            Console.WriteLine("\nPress ENTER to return or select a meeting to accept (feature coming soon).");
-            Console.ReadLine();
         }
 
-        private List<Meeting> GetPendingMeetings(string username)
+        private List<Meeting> LoadMeetings(string username)
         {
             var meetings = new List<Meeting>();
 
             using var conn = SQLstorage.GetConnection();
             conn.Open();
+
             using var cmd = new SQLiteCommand(
-                @"SELECT Id, Student, Supervisor, MeetingDate, Details, FromStudent 
-                  FROM Meetings 
-                  WHERE (Student=@u OR Supervisor=@u) AND Accepted=0", conn);
+                @"SELECT MeetingID, Student, Supervisor, Role,
+                         MeetingDate, Details, MeetingType, 
+                         FromStudent, Accepted
+                  FROM Meetings
+                  WHERE Student=@u OR Supervisor=@u", conn);
+
             cmd.Parameters.AddWithValue("@u", username);
 
             using var reader = cmd.ExecuteReader();
@@ -61,21 +85,24 @@ namespace DDD_program.MenuItems
             {
                 meetings.Add(new Meeting
                 {
-                    Id = Convert.ToInt32(reader["Id"]),
+                    Id = Convert.ToInt32(reader["MeetingID"]),
                     Student = reader["Student"].ToString(),
                     Supervisor = reader["Supervisor"].ToString(),
+                    Role = reader["Role"].ToString(),
                     MeetingDate = reader["MeetingDate"].ToString(),
                     Details = reader["Details"].ToString(),
-                    FromStudent = reader["FromStudent"] != DBNull.Value && Convert.ToBoolean(reader["FromStudent"])
+                    MeetingType = reader["MeetingType"]?.ToString() ?? "N/A",
+                    FromStudent = Convert.ToBoolean(reader["FromStudent"]),
+                    Accepted = Convert.ToBoolean(reader["Accepted"])
                 });
             }
 
             return meetings;
         }
 
-        private string GetOtherParty(Meeting meeting)
+        private string GetOtherParty(Meeting m)
         {
-            return meeting.Student == Username ? meeting.Supervisor : meeting.Student;
+            return m.Student == Username ? m.Supervisor : m.Student;
         }
 
         private class Meeting
@@ -83,9 +110,12 @@ namespace DDD_program.MenuItems
             public int Id { get; set; }
             public string Student { get; set; }
             public string Supervisor { get; set; }
+            public string Role { get; set; }
             public string MeetingDate { get; set; }
             public string Details { get; set; }
+            public string MeetingType { get; set; }
             public bool FromStudent { get; set; }
+            public bool Accepted { get; set; }
         }
     }
 }
