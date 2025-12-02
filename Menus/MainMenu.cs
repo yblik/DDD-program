@@ -80,6 +80,7 @@ namespace DDD_program.Menus
             if (Role == 3)
             {
                 _menuItems.Add(new AssignStudentsSupervisorsMenuItem());
+                _menuItems.Add(new SystemLogViewerMenuItem(Role, Username));
             }
 
 
