@@ -47,15 +47,25 @@ namespace DDD_program.Menus
 
             Console.WriteLine("---------------------------------------------------");
         }
-        public override void CreateMenu()
+        public void PopUpFeel()
         {
-
-            DrawCalendar();
+            Console.WriteLine("---------------------------------------------------");
+            new SetFeelingMenuItem(Username).Select();
+            Console.WriteLine("---------------------------------------------------");
+        }
+        public override void CreateMenu()
+        {            
             _menuItems.Clear();
+
+            if (Role == 1)
+            {
+                PopUpFeel();
+            }
             //TODO add menu items based on role
 
             //logged in as student
             //Set meetings
+            DrawCalendar();
             _menuItems.Add(new SetMeetingMenuItem(Role, Username));
 
             //View profile
