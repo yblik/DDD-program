@@ -28,6 +28,7 @@ namespace DDD_program.MenuItems
 
         public override void Select()
         {
+            SystemLogger.LogAction("Viewed profile menu");
             Console.WriteLine("\n=== PROFILE ===");
 
             try

@@ -71,7 +71,7 @@ namespace DDD_program.Menus
             //View profile
             _menuItems.Add(new ProfileMenuItem(Role, Username));
             //meeting history
-            _menuItems.Add(new MeetingHistoryMenuItem(Role));
+            //_menuItems.Add(new MeetingHistoryMenuItem(Role)); REMOVED
             _menuItems.Add(new ViewMeetingsMenuItem(Role, Username));
             if (Role == 2)
             {

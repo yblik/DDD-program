@@ -21,6 +21,7 @@ namespace DDD_program.MenuItems
 
         public override void Select()
         {
+            SystemLogger.LogAction("Viewed student dashboard menu");
             Console.Clear();
             Console.WriteLine("=== STUDENTS DASHBOARD ===\n");
 

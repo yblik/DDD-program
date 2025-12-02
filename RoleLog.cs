@@ -106,12 +106,15 @@ namespace DDD_program
                     {
                         case "student":
                             SetProfile(1); // RoleID for student
+                            SystemLogger.LogLogin(username, "student");
                             break;
                         case "supervisor":
                             SetProfile(2); // RoleID for supervisor
+                            SystemLogger.LogLogin(username, "supervisor");
                             break;
                         case "senior tutor":
                             SetProfile(3); // RoleID for senior tutor
+                            SystemLogger.LogLogin(username, "senior tutor");
                             break;
                         default:
                             Console.WriteLine("Unknown role. Contact admin.");
@@ -126,6 +129,7 @@ namespace DDD_program
                     continue; // important 
                 }
                 // Step 7: Launch main menu
+
                 MainMenu MM = new MainMenu(RoleID, Name);
                 MM.Select();
 

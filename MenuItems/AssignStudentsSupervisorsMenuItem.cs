@@ -13,6 +13,7 @@ namespace DDD_program.MenuItems
 
         public override void Select()
         {
+
             Console.Clear();
             Console.WriteLine("=== ASSIGN STUDENT TO SUPERVISOR ===\n");
 
@@ -77,11 +78,11 @@ namespace DDD_program.MenuItems
 
             if (success)
             {
-                Console.WriteLine($"\n✅ Assigned {selectedStudent} to {selectedSupervisor}");
+                Console.WriteLine($"Assigned {selectedStudent} to {selectedSupervisor}");
             }
             else
             {
-                Console.WriteLine($"\n❌ Failed to assign.");
+                Console.WriteLine($"Failed to assign.");
             }
 
             Console.WriteLine("\nPress ENTER to continue...");

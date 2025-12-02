@@ -29,6 +29,7 @@ namespace DDD_program.MenuItems
         }
         public override void Select()
         {
+            SystemLogger.LogAction("Viewed meetings history menu");
             //TODO display user profile information
             if (Role == 1)
             {

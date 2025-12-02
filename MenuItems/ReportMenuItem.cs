@@ -25,6 +25,7 @@ namespace DDD_program.MenuItems
         }
         public override void Select()
         {
+            SystemLogger.LogAction("Viewed report menu");
             //TODO display user profile information
             if (Role == 1)
             {

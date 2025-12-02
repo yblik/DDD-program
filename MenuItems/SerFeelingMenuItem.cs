@@ -17,6 +17,7 @@ namespace DDD_program.MenuItems
 
         public override void Select()
         {
+            SystemLogger.LogAction("Student went on feelings menu");
             Console.Clear();
             Console.WriteLine("=== SET FEELING ===\n");
 

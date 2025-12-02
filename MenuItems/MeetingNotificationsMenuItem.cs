@@ -15,6 +15,7 @@ namespace DDD_program.MenuItems
 
         public void DrawHUD()
         {
+
             Console.WriteLine("=== MEETINGS OVERVIEW ===\n");
 
             var allMeetings = LoadMeetings(Username);

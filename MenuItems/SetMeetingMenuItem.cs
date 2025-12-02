@@ -219,6 +219,8 @@ namespace DDD_program.MenuItems
             cmd.Parameters.AddWithValue("@accepted", false);
 
             cmd.ExecuteNonQuery();
+
+            SystemLogger.LogAction("Added meeting");
         }
 
 

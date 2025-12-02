@@ -23,6 +23,7 @@ namespace DDD_program.MenuItems
 
         public override void Select()
         {
+            SystemLogger.LogAction("Viewed Meetings menu");
             Console.Clear();
             Console.WriteLine("=== MEETINGS ===\n");
 

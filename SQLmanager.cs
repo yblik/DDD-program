@@ -163,6 +163,7 @@ namespace DDD_program
         // Method 2: Update the fucking table
         public static bool AssignStudentToSupervisor(string studentUsername, string supervisorUsername)
         {
+            SystemLogger.LogAction("Senior tutor assigned supervisor with student");
             using (var connection = SQLstorage.GetConnection())
             {
                 connection.Open();
