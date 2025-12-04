@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DDD_program.MenuLogic
 {
-    internal static class ConsoleHelper
+    public static class ConsoleHelper
     {
         public static int GetIntegerInRange(int pMin, int pMax, string pMessage)
         {
