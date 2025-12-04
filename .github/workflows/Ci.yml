@@ -1,0 +1,53 @@
+name: Personal Supervisor System Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    environment: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('/home/runner/work/CICDddd/CICDddd/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Install native deps (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-0 libsqlite3-dev
+
+      - name: Restore
+        run: dotnet restore "DDD program.sln"
+        working-directory: /home/runner/work/CICDddd/CICDddd
+
+      - name: Build
+        run: dotnet build "DDD program.sln" --configuration Release --no-restore
+        working-directory: /home/runner/work/CICDddd/CICDddd
+
+      - name: Run tests
+        run: |
+          mkdir -p TestResults
+          dotnet test "DDD program.sln" --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+        working-directory: /home/runner/work/CICDddd/CICDddd
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: /home/runner/work/CICDddd/CICDddd/TestResults/**/*.trx
