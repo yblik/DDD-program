@@ -5,8 +5,6 @@ VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD program", "DDD program.csproj", "{5E8AED39-5BB5-4C83-8683-DDDA0825DF0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestOld", "..\UnitTest\UnitTestOld.csproj", "{12013801-3DE3-420E-83BB-567CE8317D86}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,15 +15,11 @@ Global
 		{5E8AED39-5BB5-4C83-8683-DDDA0825DF0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E8AED39-5BB5-4C83-8683-DDDA0825DF0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E8AED39-5BB5-4C83-8683-DDDA0825DF0C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12013801-3DE3-420E-83BB-567CE8317D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12013801-3DE3-420E-83BB-567CE8317D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12013801-3DE3-420E-83BB-567CE8317D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12013801-3DE3-420E-83BB-567CE8317D86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {8292E1A3-97E0-4A0C-AACB-1BE2D089DDA6}
+		        SolutionGuid = {8292E1A3-97E0-4A0C-AACB-1BE2D089DDA6}
 	EndGlobalSection
 EndGlobal
