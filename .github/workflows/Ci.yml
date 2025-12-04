@@ -24,7 +24,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('/home/runner/work/CICDddd/CICDddd/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('CICDddd/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -34,20 +34,20 @@ jobs:
 
       - name: Restore
         run: dotnet restore "DDD program.sln"
-        working-directory: /home/runner/work/CICDddd/CICDddd
+        working-directory: ./CICDddd
 
       - name: Build
         run: dotnet build "DDD program.sln" --configuration Release --no-restore
-        working-directory: /home/runner/work/CICDddd/CICDddd
+        working-directory: ./CICDddd
 
       - name: Run tests
         run: |
           mkdir -p TestResults
           dotnet test "DDD program.sln" --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
-        working-directory: /home/runner/work/CICDddd/CICDddd
+        working-directory: ./CICDddd
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: /home/runner/work/CICDddd/CICDddd/TestResults/**/*.trx
+          path: CICDddd/TestResults/**/*.trx
