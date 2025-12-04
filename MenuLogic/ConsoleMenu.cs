@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DDD_program.MenuLogic
 {
-    internal abstract class ConsoleMenu: MenuItem
+    public abstract class ConsoleMenu: MenuItem
     {
         //list of menu items
         protected List<MenuItem> _menuItems = new List<MenuItem>();

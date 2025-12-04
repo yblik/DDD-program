@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DDD_program.MenuLogic
 {
-    internal abstract class MenuItem
+    public abstract class MenuItem
     {
         //public int Role { get; }
 

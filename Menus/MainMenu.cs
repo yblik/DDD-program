@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DDD_program.Menus
 {
-    class MainMenu: ConsoleMenu
+    public class MainMenu: ConsoleMenu
     {
         public int Role { get; set; }
         public string Username { get; set; }
