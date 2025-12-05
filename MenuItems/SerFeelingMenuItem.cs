@@ -40,7 +40,7 @@ namespace DDD_program.MenuItems
             Console.WriteLine($"Your current feeling: {currentFeeling}\n");
 
             string[] feelings =
-            { "Happy", "Excited", "Neutral", "Sad", "Anxious", "Stressed", "Depressed","Overwhelmed","Angry", "Zesty", "Freaky" };
+            { "Happy", "Excited", "Neutral", "Sad", "Anxious", "Stressed", "Depressed","Overwhelmed","Angry"};
 
             int feelingIndex = ConsoleHelper.GetSelectionFromMenu(feelings, "Select your current feeling:");
 
