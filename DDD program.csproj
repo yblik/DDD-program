@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="unittest\**" />
+    <EmbeddedResource Remove="unittest\**" />
+    <None Remove="unittest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
   </ItemGroup>
 

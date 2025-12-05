@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD program", "DDD program.csproj", "{5E8AED39-5BB5-4C83-8683-DDDA0825DF0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unittest", "..\unittest\unittest.csproj", "{3DBBE14B-9018-46CB-AC54-9D25F4C3CCCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unittest", "unittest\unittest.csproj", "{3DBBE14B-9018-46CB-AC54-9D25F4C3CCCA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

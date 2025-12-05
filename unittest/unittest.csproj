@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DDD-program\DDD program.csproj" />
+    <ProjectReference Include="..\DDD program.csproj" />
   </ItemGroup>
 
   <ItemGroup>
