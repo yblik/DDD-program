@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DDD_program
 {
-    internal class RoleLog //used to log role and kick start menus
+    public class RoleLog //used to log role and kick start menus
     {
         public enum Role { student, Supervisor, SeniorTutor }
         public string Name;
