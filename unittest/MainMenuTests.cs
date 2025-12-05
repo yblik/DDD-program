@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using DDD_program.MenuLogic;
 using DDD_program.Menus;
 
-namespace UnitTest
-{
     [TestClass]
     public  class MainMenuTests
     {
@@ -62,4 +60,3 @@ namespace UnitTest
         }
 
     }
-}
