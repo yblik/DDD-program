@@ -8,6 +8,7 @@ using DDD_program.Menus;
 
 namespace UnitTest
 {
+    [TestClass]
     internal class MainMenuTests
     {
         private TextWriter _originalOut;
