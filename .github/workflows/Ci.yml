@@ -2,9 +2,9 @@ name: Personal Supervisor System Unit Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
   build-and-test:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
@@ -27,22 +27,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Install native deps (Linux)
+      - name: Install native dependencies (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libsqlite3-0 libsqlite3-dev
 
+      # IMPORTANT: run from the parent of github.workspace to satisfy ..\ paths in the .sln
       - name: Restore
-        run: dotnet restore "DDD program.sln"
+        working-directory: ${{ github.workspace }}/..
+        run: dotnet restore "DDD-program/DDD program.sln"
 
       - name: Build
-        run: dotnet build "DDD program.sln" --configuration Release --no-restore
+        working-directory: ${{ github.workspace }}/..
+        run: dotnet build "DDD-program/DDD program.sln" --configuration Release --no-restore
 
       - name: Run tests
+        working-directory: ${{ github.workspace }}/..
         run: |
           mkdir -p TestResults
-          dotnet test "DDD program.sln" --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+          dotnet test "DDD-program/DDD program.sln" \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test_results.trx" \
+            --results-directory TestResults
 
-      - name: Upload test results
+      - name: Upload test results (always)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
